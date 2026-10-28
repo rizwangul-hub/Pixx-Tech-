@@ -484,8 +484,9 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                 style={{
                   padding: '10px 12px',
                   borderRadius: '12px',
-                  backgroundColor: 'rgba(7, 11, 23, 0.78)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: '#7DD3FC',
+                  border: '1px solid #38BDF8',
+                  boxShadow: '0 6px 18px rgba(56, 189, 248, 0.18)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px',
@@ -493,11 +494,11 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--cyan-accent, #35D6FF)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#075985', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Website Login Credentials
                   </span>
                   {userAppCreds.role && (
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted, #64748B)', fontWeight: 600 }}>
+                    <span style={{ fontSize: '10px', color: '#0C4A6E', fontWeight: 700 }}>
                       {userAppCreds.role}
                     </span>
                   )}
@@ -511,20 +512,20 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                     justifyContent: 'space-between',
                     padding: '5px 8px',
                     borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    backgroundColor: 'rgba(240, 249, 255, 0.92)',
+                    border: '1px solid rgba(12, 74, 110, 0.18)',
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, marginRight: '8px' }}>
-                    <span style={{ fontSize: '9.5px', color: 'var(--text-muted, #64748B)' }}>
+                    <span style={{ fontSize: '9.5px', color: '#075985', fontWeight: 600 }}>
                       {userAppCreds.username ? 'Username / ID' : 'Email'}
                     </span>
                     <span
                       style={{
                         fontSize: '11.5px',
                         fontFamily: 'var(--font-mono, monospace)',
-                        color: 'var(--text-primary, #F5F7FF)',
-                        fontWeight: 600,
+                        color: '#082F49',
+                        fontWeight: 700,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -550,9 +551,9 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                       gap: '4px',
                       padding: '4px 8px',
                       borderRadius: '6px',
-                      backgroundColor: copiedField === `email-${app._id || app.slug}` ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                      border: `1px solid ${copiedField === `email-${app._id || app.slug}` ? '#10B981' : 'rgba(255, 255, 255, 0.12)'}`,
-                      color: copiedField === `email-${app._id || app.slug}` ? '#10B981' : 'var(--text-secondary, #A5B1C8)',
+                      backgroundColor: copiedField === `email-${app._id || app.slug}` ? 'rgba(16, 185, 129, 0.25)' : '#BAE6FD',
+                      border: `1px solid ${copiedField === `email-${app._id || app.slug}` ? '#10B981' : '#38BDF8'}`,
+                      color: copiedField === `email-${app._id || app.slug}` ? '#065F46' : '#075985',
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -573,20 +574,20 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                     justifyContent: 'space-between',
                     padding: '5px 8px',
                     borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    backgroundColor: 'rgba(240, 249, 255, 0.92)',
+                    border: '1px solid rgba(12, 74, 110, 0.18)',
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, marginRight: '8px' }}>
-                    <span style={{ fontSize: '9.5px', color: 'var(--text-muted, #64748B)' }}>
+                    <span style={{ fontSize: '9.5px', color: '#075985', fontWeight: 600 }}>
                       Password
                     </span>
                     <span
                       style={{
                         fontSize: '11.5px',
                         fontFamily: 'var(--font-mono, monospace)',
-                        color: 'var(--text-primary, #F5F7FF)',
-                        fontWeight: 600,
+                        color: '#082F49',
+                        fontWeight: 700,
                         letterSpacing: '0.02em',
                       }}
                     >
@@ -609,9 +610,9 @@ const SoftwareCard = ({ software, app: legacyApp, index = 0, onSelectSoftware, o
                       gap: '4px',
                       padding: '4px 8px',
                       borderRadius: '6px',
-                      backgroundColor: copiedField === `pass-${app._id || app.slug}` ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                      border: `1px solid ${copiedField === `pass-${app._id || app.slug}` ? '#10B981' : 'rgba(255, 255, 255, 0.12)'}`,
-                      color: copiedField === `pass-${app._id || app.slug}` ? '#10B981' : 'var(--text-secondary, #A5B1C8)',
+                      backgroundColor: copiedField === `pass-${app._id || app.slug}` ? 'rgba(16, 185, 129, 0.25)' : '#BAE6FD',
+                      border: `1px solid ${copiedField === `pass-${app._id || app.slug}` ? '#10B981' : '#38BDF8'}`,
+                      color: copiedField === `pass-${app._id || app.slug}` ? '#065F46' : '#075985',
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
