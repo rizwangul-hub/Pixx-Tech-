@@ -10,6 +10,13 @@ export const AuthProvider = ({ children }) => {
 
   // Check existing session status on initial boot
   const checkAuthStatus = useCallback(async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('pixxtech_token') : null;
+    if (!token) {
+      setCurrentUser(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await portalApi.getMe();
@@ -17,10 +24,16 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(res.user);
         setAuthError(null);
       } else {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('pixxtech_token');
+        }
         setCurrentUser(null);
       }
     } catch {
-      // Unauthenticated session
+      // Unauthenticated session or expired token
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pixxtech_token');
+      }
       setCurrentUser(null);
     } finally {
       setLoading(false);

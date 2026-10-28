@@ -70,7 +70,13 @@ export const portalApi = {
     return res;
   },
 
-  getMe: () => request('/auth/me'),
+  getMe: () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('pixxtech_token') : null;
+    if (!token) {
+      return Promise.resolve({ success: false, user: null });
+    }
+    return request('/auth/me');
+  },
 
   logout: async () => {
     try {
