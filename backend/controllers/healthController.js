@@ -28,6 +28,7 @@ exports.getHealth = (req, res) => {
       provider: 'MongoDB Atlas / Mongoose',
       host: dbStatus.host || 'Not Connected',
       name: dbStatus.name || null,
+      error: dbStatus.lastError || null,
     },
     // Cloudinary storage status
     cloudinary: {

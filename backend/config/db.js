@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
 let cachedPromise = null;
+let lastConnectionError = null;
 
 const DEFAULT_MONGODB_URI = 'mongodb+srv://mern:stack@cluster0.a2wsoz3.mongodb.net/pixxtech?retryWrites=true&w=majority';
 
@@ -68,14 +69,18 @@ const connectDB = async () => {
     })
     .catch((err) => {
       cachedPromise = null;
+      lastConnectionError = err.message;
       logger.error(`[Database Error] Could not connect to MongoDB: ${err.message} (Target: ${sanitizeMongoUri(uri)})`);
       throw err;
     });
 
   try {
-    return await cachedPromise;
-  } catch {
+    const conn = await cachedPromise;
+    lastConnectionError = null;
+    return conn;
+  } catch (err) {
     cachedPromise = null;
+    lastConnectionError = err.message;
     return null;
   }
 };
@@ -102,6 +107,7 @@ const getDbStatus = () => {
     readyState: stateCode,
     host: isConnected ? mongoose.connection.host : null,
     name: isConnected ? mongoose.connection.name : null,
+    lastError: isConnected ? null : lastConnectionError,
   };
 };
 
