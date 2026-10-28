@@ -1,0 +1,57 @@
+/**
+ * PixxTech Central Portal - Session Configuration
+ * Phase 3: Persistent Server-Side MongoDB Sessions & Secure Cookie Configuration
+ */
+
+const session = require('express-session');
+const { MongoStore } = require('connect-mongo');
+const logger = require('../utils/logger');
+
+const configureSession = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const sessionSecret = process.env.SESSION_SECRET || 'pixxtech_portal_secure_session_secret_2026';
+
+  let rawUri = process.env.MONGODB_URI;
+  if (rawUri && typeof rawUri === 'string') {
+    rawUri = rawUri.trim();
+    if (rawUri.startsWith('MONGODB_URI=')) {
+      rawUri = rawUri.replace(/^MONGODB_URI=/, '').trim();
+      process.env.MONGODB_URI = rawUri;
+    }
+  }
+
+  let store;
+  if (rawUri && process.env.NODE_ENV !== 'test') {
+    try {
+      store = MongoStore.create({
+        mongoUrl: rawUri,
+        collectionName: 'portal_sessions',
+        ttl: 7 * 24 * 60 * 60, // 7 days in seconds
+        autoRemove: 'native',
+        touchAfter: 24 * 3600, // Touch session only once every 24h unless data modified
+      });
+      logger.info('[Session] Persistent MongoDB session store configured.');
+    } catch (err) {
+      logger.warn(`[Session] Failed to initialize MongoStore, falling back to in-memory store: ${err.message}`);
+    }
+  } else {
+    logger.info('[Session] In-memory session store active for test/development environment.');
+  }
+
+  return session({
+    name: 'pixxtech.sid',
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    store,
+    cookie: {
+      httpOnly: true, // Prevents client-side script access
+      secure: isProduction, // Transmitted only over HTTPS in production
+      sameSite: 'lax', // Protects against CSRF while enabling top-level navigations
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      path: '/',
+    },
+  });
+};
+
+module.exports = configureSession;
