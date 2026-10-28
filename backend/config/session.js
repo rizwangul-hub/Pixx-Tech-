@@ -10,8 +10,9 @@ const logger = require('../utils/logger');
 const configureSession = () => {
   const isProduction = process.env.NODE_ENV === 'production';
   const sessionSecret = process.env.SESSION_SECRET || 'pixxtech_portal_secure_session_secret_2026';
+  const DEFAULT_URI = 'mongodb+srv://mern:stack@cluster0.a2wsoz3.mongodb.net/pixxtech?retryWrites=true&w=majority';
 
-  let rawUri = process.env.MONGODB_URI;
+  let rawUri = process.env.MONGODB_URI || DEFAULT_URI;
   if (rawUri && typeof rawUri === 'string') {
     rawUri = rawUri.trim();
     if (rawUri.startsWith('MONGODB_URI=')) {

@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
-let isConnecting = false;
+let cachedPromise = null;
 
-/**
- * Sanitizes MongoDB connection string by stripping username and password for safe logging
- */
+const DEFAULT_MONGODB_URI = 'mongodb+srv://mern:stack@cluster0.a2wsoz3.mongodb.net/pixxtech?retryWrites=true&w=majority';
+
 const sanitizeMongoUri = (uri) => {
   if (!uri) return 'undefined';
   try {
@@ -17,63 +16,66 @@ const sanitizeMongoUri = (uri) => {
 
 /**
  * Connect to MongoDB Atlas or local MongoDB instance.
- * Avoids multiple connection calls if already connected or connecting.
+ * Reuses cached connection across Serverless function invocations.
  */
 const connectDB = async () => {
-  let uri = process.env.MONGODB_URI;
+  let uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
 
   if (uri && typeof uri === 'string') {
     uri = uri.trim();
     if (uri.startsWith('MONGODB_URI=')) {
       uri = uri.replace(/^MONGODB_URI=/, '').trim();
-      process.env.MONGODB_URI = uri;
     }
+    process.env.MONGODB_URI = uri;
   }
 
-  if (!uri) {
-    logger.warn('[Database] MONGODB_URI is not configured in environment variables.');
-    return null;
-  }
-
-  // Check if already connected (readyState 1 = connected, 2 = connecting)
+  // Check if already connected (readyState 1 = connected)
   if (mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
 
-  if (isConnecting) {
-    logger.info('[Database] Connection attempt already in progress...');
-    return null;
+  // If a connection promise is already in flight, wait for it
+  if (cachedPromise) {
+    try {
+      return await cachedPromise;
+    } catch {
+      cachedPromise = null;
+    }
   }
 
-  isConnecting = true;
-
-  try {
-    // Configure Mongoose event listeners once
-    if (mongoose.connection.listenerCount('disconnected') === 0) {
-      mongoose.connection.on('connected', () => {
-        logger.info('[Database] MongoDB connection established successfully.');
-      });
-
-      mongoose.connection.on('disconnected', () => {
-        logger.warn('[Database] MongoDB connection disconnected.');
-      });
-
-      mongoose.connection.on('error', (err) => {
-        logger.error(`[Database Event Error] ${err.message}`);
-      });
-    }
-
-    const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 4000, // Safe timeout so the API starts and remains responsive
+  // Configure Mongoose event listeners once
+  if (mongoose.connection.listenerCount('connected') === 0) {
+    mongoose.connection.on('connected', () => {
+      logger.info('[Database] MongoDB connection established successfully.');
     });
 
-    isConnecting = false;
-    logger.info(`[Database] Connected to MongoDB host: ${conn.connection.host} (Database: ${conn.connection.name})`);
-    return conn;
-  } catch (error) {
-    isConnecting = false;
-    // Log safe error without exposing credentials
-    logger.error(`[Database Error] Could not connect to MongoDB: ${error.message} (Target: ${sanitizeMongoUri(uri)})`);
+    mongoose.connection.on('disconnected', () => {
+      logger.warn('[Database] MongoDB connection disconnected.');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      logger.error(`[Database Event Error] ${err.message}`);
+    });
+  }
+
+  cachedPromise = mongoose
+    .connect(uri, {
+      serverSelectionTimeoutMS: 6000,
+    })
+    .then((conn) => {
+      logger.info(`[Database] Connected to MongoDB host: ${conn.connection.host} (Database: ${conn.connection.name})`);
+      return conn;
+    })
+    .catch((err) => {
+      cachedPromise = null;
+      logger.error(`[Database Error] Could not connect to MongoDB: ${err.message} (Target: ${sanitizeMongoUri(uri)})`);
+      throw err;
+    });
+
+  try {
+    return await cachedPromise;
+  } catch {
+    cachedPromise = null;
     return null;
   }
 };

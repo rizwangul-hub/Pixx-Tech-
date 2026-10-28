@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { ROLES } = require('../config/roles');
 const { recordActivity } = require('../utils/auditLogger');
-const { getDbStatus } = require('../config/db');
+const { getDbStatus, connectDB } = require('../config/db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pixxtech_portal_session_jwt_secret_phase3';
 
@@ -18,12 +18,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'pixxtech_portal_session_jwt_secret
  */
 exports.login = async (req, res) => {
   try {
-    const dbStatus = getDbStatus();
+    let dbStatus = getDbStatus();
     if (!dbStatus.connected) {
-      return res.status(503).json({
-        success: false,
-        message: 'Database is currently offline. Cannot authenticate credentials.',
-      });
+      await connectDB();
+      dbStatus = getDbStatus();
+      if (!dbStatus.connected) {
+        return res.status(503).json({
+          success: false,
+          message: 'Database is currently offline. Cannot authenticate credentials.',
+        });
+      }
     }
 
     const { email, username, password } = req.body;

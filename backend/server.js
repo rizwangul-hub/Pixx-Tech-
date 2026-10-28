@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { validateEnvironment } = require('./config/validateEnv');
+const mongoose = require('mongoose');
 const { connectDB, closeDB } = require('./config/db');
 const configureSession = require('./config/session');
 const routes = require('./routes');
@@ -90,6 +91,18 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     logger.info(`${req.method} ${req.originalUrl} [${res.statusCode}] - ${duration}ms`);
   });
+  next();
+});
+
+// Auto-connect database middleware for Serverless & Cloud requests
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (err) {
+      logger.warn(`Serverless DB auto-connect failed: ${err.message}`);
+    }
+  }
   next();
 });
 
