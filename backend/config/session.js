@@ -46,8 +46,8 @@ const configureSession = () => {
     store,
     cookie: {
       httpOnly: true, // Prevents client-side script access
-      secure: isProduction, // Transmitted only over HTTPS in production
-      sameSite: 'lax', // Protects against CSRF while enabling top-level navigations
+      secure: isProduction || Boolean(process.env.VERCEL), // Transmitted over HTTPS in production / Vercel
+      sameSite: isProduction || Boolean(process.env.VERCEL) ? 'none' : 'lax', // 'none' allows cross-subdomain Vercel auth
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       path: '/',
     },

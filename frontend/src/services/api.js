@@ -9,9 +9,12 @@ const DEV_KEY = 'dev_secret_pixxtech_phase2';
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('pixxtech_token') : null;
+
   const headers = {
     'Content-Type': 'application/json',
     'x-internal-dev-key': DEV_KEY,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
@@ -56,18 +59,30 @@ export const portalApi = {
   getHealth: () => request('/health'),
 
   // Authentication & Session
-  login: (credentials) =>
-    request('/auth/login', {
+  login: async (credentials) => {
+    const res = await request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
-    }),
+    });
+    if (res && res.token && typeof window !== 'undefined') {
+      localStorage.setItem('pixxtech_token', res.token);
+    }
+    return res;
+  },
 
   getMe: () => request('/auth/me'),
 
-  logout: () =>
-    request('/auth/logout', {
-      method: 'POST',
-    }),
+  logout: async () => {
+    try {
+      await request('/auth/logout', {
+        method: 'POST',
+      });
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pixxtech_token');
+      }
+    }
+  },
 
   changePassword: (payload) =>
     request('/auth/change-password', {
