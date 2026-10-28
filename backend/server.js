@@ -152,7 +152,12 @@ const handleShutdown = async (signal) => {
 
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.VERCEL) {
+  // On Vercel Serverless environment, initialize MongoDB connection
+  connectDB().catch((err) => {
+    logger.warn(`Initial MongoDB connection failed: ${err.message}`);
+  });
+} else if (process.env.NODE_ENV !== 'test') {
   startServer();
 }
 
