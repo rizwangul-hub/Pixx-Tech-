@@ -11,33 +11,51 @@ const MainLayout = ({
   onNavigate, 
   isBackendOnline, 
   searchQuery, 
-  onSearch 
+  onSearch,
+  isViewingApp = false,
 }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-darkest)' }}>
       {/* Ambient Radial Lights */}
-      <div className="portal-ambient-bg" />
+      {!isViewingApp && <div className="portal-ambient-bg" />}
 
-      {/* Top Navbar */}
-      <Navbar
-        searchQuery={searchQuery}
-        onSearch={onSearch}
-        onNavigate={onNavigate}
-        currentPage={currentPage}
-      />
+      {/* Top Navbar - Hidden when viewing an application full screen */}
+      {!isViewingApp && (
+        <Navbar
+          searchQuery={searchQuery}
+          onSearch={onSearch}
+          onNavigate={onNavigate}
+          currentPage={currentPage}
+        />
+      )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Expands to 100vw / 100vh when viewing an application */}
       <main
-        style={{
-          flex: 1,
-          padding: '28px 32px',
-          maxWidth: '1440px',
-          width: '100%',
-          margin: '0 auto',
-          position: 'relative',
-          zIndex: 1,
-        }}
-        className="portal-main-container"
+        style={
+          isViewingApp
+            ? {
+                flex: 1,
+                padding: 0,
+                maxWidth: '100vw',
+                width: '100vw',
+                height: '100vh',
+                margin: 0,
+                overflow: 'hidden',
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9999,
+              }
+            : {
+                flex: 1,
+                padding: '28px 32px',
+                maxWidth: '1440px',
+                width: '100%',
+                margin: '0 auto',
+                position: 'relative',
+                zIndex: 1,
+              }
+        }
+        className={isViewingApp ? 'portal-app-full-container' : 'portal-main-container'}
       >
         {children}
       </main>

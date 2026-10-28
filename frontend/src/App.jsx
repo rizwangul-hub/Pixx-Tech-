@@ -21,6 +21,7 @@ import mobileImg from './assets/mobile.png';
 function AppContent() {
   const { loading: authLoading, isAuthenticated, refreshProfile, isRizwan } = useAuth();
   const [currentPage, setCurrentPage] = useState('software');
+  const [activeViewingApp, setActiveViewingApp] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isBackendOnline, setIsBackendOnline] = useState(false);
   const [backendHealth, setBackendHealth] = useState(null);
@@ -147,8 +148,15 @@ function AppContent() {
               isBackendOnline={isBackendOnline}
               searchQuery={searchQuery}
               onSearch={setSearchQuery}
+              isViewingApp={Boolean(activeViewingApp)}
             >
-              {currentPage === 'software' && <Software onNavigate={setCurrentPage} />}
+              {currentPage === 'software' && (
+                <Software
+                  onNavigate={setCurrentPage}
+                  activeViewingApp={activeViewingApp}
+                  onViewingAppChange={setActiveViewingApp}
+                />
+              )}
               {isRizwan && currentPage === 'users' && <Users onNavigate={setCurrentPage} />}
               {isRizwan && currentPage === 'settings' && (
                 <Settings
@@ -159,7 +167,11 @@ function AppContent() {
               )}
               {/* Fallback to software view if unauthorized route requested */}
               {(!isRizwan && currentPage !== 'software') && (
-                <Software onNavigate={setCurrentPage} />
+                <Software
+                  onNavigate={setCurrentPage}
+                  activeViewingApp={activeViewingApp}
+                  onViewingAppChange={setActiveViewingApp}
+                />
               )}
             </MainLayout>
           )}

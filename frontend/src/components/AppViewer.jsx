@@ -9,7 +9,9 @@ import {
   AlertTriangle,
   Lock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Minimize2,
+  Maximize2
 } from 'lucide-react';
 import Button from './Button';
 import Badge from './Badge';
@@ -42,10 +44,28 @@ const AppViewer = ({ app, onBack }) => {
   const [copiedField, setCopiedField] = useState('');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [hasLoadError, setHasLoadError] = useState(false);
+  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
 
   const websiteLogo = getAppLogo(app);
   const destinationUrl = getDestinationUrl(app);
   const userCreds = getUserAppCredentials(currentUser, app);
+
+  // Listen for return messages from child website iframes
+  useEffect(() => {
+    const handleCrossWindowMessage = (event) => {
+      if (
+        event.data === 'PIXXTECH_RETURN' ||
+        event.data === 'BACK_TO_PORTAL' ||
+        event.data?.type === 'PIXXTECH_RETURN' ||
+        event.data?.action === 'BACK_TO_PORTAL'
+      ) {
+        if (onBack) onBack();
+      }
+    };
+
+    window.addEventListener('message', handleCrossWindowMessage);
+    return () => window.removeEventListener('message', handleCrossWindowMessage);
+  }, [onBack]);
 
   // Handle browser back button (popstate) to return safely to Central Portal
   useEffect(() => {
@@ -91,7 +111,7 @@ const AppViewer = ({ app, onBack }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100,
+        zIndex: 999999,
         backgroundColor: '#070B17',
         display: 'flex',
         flexDirection: 'column',
@@ -101,25 +121,84 @@ const AppViewer = ({ app, onBack }) => {
       }}
       className="pixxtech-inapp-viewer"
     >
+      {/* Floating Pill when header is minimized for 100% full screen */}
+      {isHeaderMinimized && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '12px',
+            left: '12px',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={ArrowLeft}
+            onClick={onBack}
+            style={{
+              padding: '6px 14px',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              backgroundColor: 'rgba(7, 11, 23, 0.94)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(56, 189, 248, 0.5)',
+              color: '#F5F7FF',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+              borderRadius: '24px',
+            }}
+            title="Return to Central Portal Dashboard"
+          >
+            <span className="back-btn-text">Back to Dashboard</span>
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => setIsHeaderMinimized(false)}
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(7, 11, 23, 0.94)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#38BDF8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+            }}
+            title="Expand Full Header Bar"
+          >
+            <Maximize2 size={13} />
+          </button>
+        </div>
+      )}
+
       {/* 1. Persistent Top Navigation Bar */}
-      <header
-        style={{
-          height: '60px',
-          minHeight: '60px',
-          backgroundColor: 'rgba(7, 11, 23, 0.96)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          gap: '12px',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
+      {!isHeaderMinimized && (
+        <header
+          style={{
+            height: '42px',
+            minHeight: '42px',
+            backgroundColor: 'rgba(7, 11, 23, 0.98)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 12px',
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+            gap: '10px',
+            position: 'relative',
+            zIndex: 10,
+          }}
+        >
         {/* Left: Back Button & Branding */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
           <Button
@@ -353,8 +432,30 @@ const AppViewer = ({ app, onBack }) => {
           >
             <span className="external-btn-text">Open External</span>
           </Button>
+
+          {/* Minimize Header Toggle for 100% Full Screen */}
+          <button
+            type="button"
+            onClick={() => setIsHeaderMinimized(true)}
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#A5B1C8',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            title="Minimize header to view full website"
+          >
+            <Minimize2 size={13} />
+          </button>
         </div>
       </header>
+      )}
 
       {/* Mobile Credentials Dropdown Banner */}
       {isMobileDrawerOpen && userCreds && (
@@ -419,7 +520,7 @@ const AppViewer = ({ app, onBack }) => {
           position: 'relative',
           flex: 1,
           width: '100%',
-          height: 'calc(100% - 60px)',
+          height: isHeaderMinimized ? '100%' : 'calc(100% - 42px)',
           overflow: 'hidden',
           backgroundColor: '#030712',
         }}

@@ -46,7 +46,7 @@ const SOFTWARE_CATEGORIES = [
  * Displays all authorized enterprise applications immediately at the top without searching.
  * Exclusively provides "Register User", "Register Application", and "Settings" to Rizwan.
  */
-const Software = ({ onNavigate }) => {
+const Software = ({ onNavigate, activeViewingApp: externalViewingApp, onViewingAppChange }) => {
   const { currentUser, isRizwan } = useAuth();
   const toast = useToast();
 
@@ -55,7 +55,9 @@ const Software = ({ onNavigate }) => {
   const [error, setError] = useState(null);
 
   // In-App Embedded Application Viewer State
-  const [activeViewingApp, setActiveViewingApp] = useState(null);
+  const [internalViewingApp, setInternalViewingApp] = useState(null);
+  const activeViewingApp = externalViewingApp !== undefined ? externalViewingApp : internalViewingApp;
+  const setActiveViewingApp = onViewingAppChange || setInternalViewingApp;
 
   // Modals state for Rizwan
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
