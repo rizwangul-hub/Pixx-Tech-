@@ -27,6 +27,10 @@ if (
         });
       })
       .catch((error) => {
+        // Suppress expected restrictions in extension simulator frames
+        if (error?.name === 'SecurityError' || String(error).includes('simulator')) {
+          return;
+        }
         console.warn('[PixxTech PWA] Service Worker registration failed:', error);
       });
   });
